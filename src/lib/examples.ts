@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase';
+import { getSupabase } from '@/lib/supabase';
 import { ExampleAlgorithm, RealWorldExample } from '@/types';
 
 export const ALGORITHM_LABELS: Record<ExampleAlgorithm, string> = {
@@ -19,21 +19,24 @@ export interface ExampleDraft {
 }
 
 export async function listExamples(): Promise<RealWorldExample[]> {
-  const { data, error } = await supabase
+  const { data, error } = await getSupabase()
     .from('real_world_examples')
     .select('id, algorithm, author_name, situation, created_at')
     .order('created_at', { ascending: false })
     .limit(100);
+
   if (error) throw new Error(error.message);
   if (!Array.isArray(data)) throw new Error('Unexpected response from the server.');
+
   return data as RealWorldExample[];
 }
 
 export async function submitExample(draft: ExampleDraft): Promise<void> {
-  const { error } = await supabase.from('real_world_examples').insert({
+  const { error } = await getSupabase().from('real_world_examples').insert({
     algorithm: draft.algorithm,
     author_name: draft.author_name.trim(),
     situation: draft.situation.trim(),
   });
+
   if (error) throw new Error(error.message);
 }
